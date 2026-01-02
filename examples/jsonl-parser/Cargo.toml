@@ -1,0 +1,26 @@
+[package]
+name = "jsonl-parser"
+version = "0.1.0"
+
+
+edition.workspace = true
+publish = false
+
+[features]
+default = []
+alloc = []
+
+[dependencies]
+logos = { workspace = true }
+synkit = { path = "../../kit", features = ["tokio"] }
+synkit_core = { path = "../../core", package = "synkit-core", features = ["tokio"] }
+thiserror = {workspace = true}
+tokio = {  features = ["sync", "rt", "macros"], workspace = true}
+
+[dev-dependencies]
+divan = {workspace = true}
+tokio = {  features = ["sync", "rt", "macros", "rt-multi-thread"], workspace = true}
+
+[[bench]]
+name = "throughput"
+harness = false

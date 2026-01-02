@@ -1,0 +1,39 @@
+[workspace]
+members = ["core", "examples/*", "kit", "macros"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+
+repository = "https://github.com/joshuaauchincloss/synkit"
+homepage = "https://github.com/joshuaauchincloss/synkit"
+documentation = "https://docs.rs/synkit"
+
+readme = "README.md"
+description = "A fast, syn-like incremental parser framework for Rust"
+authors = ["Joshua Auchincloss <joshua.auchincloss@proton.me>"]
+keywords = ["parser", "incremental", "lexer", "tokenizer", "async"]
+categories = ["parsing", "asynchronous", "development-tools::procedural-macro-helpers"]
+
+
+[workspace.dependencies]
+synkit-core = { path = "core", version = "0.1.0" }
+synkit-macros = { path = "macros", version = "0.1.0" }
+
+arbitrary = "1"
+divan = { version = "4", package = "codspeed-divan-compat" }
+futures-core = "0.3"
+insta = { version = "1", features = ["yaml"] }
+libfuzzer-sys = "0.4"
+logos = "0.16"
+proc-macro2 = "1"
+quote = "1"
+serde = { version = "1", features = ["derive"] }
+simple-mermaid = "0.2"
+syn = { version = "2", features = ["full", "parsing", "printing", "extra-traits"] }
+test-case = "3"
+thiserror = "2"
+tokio = "1"

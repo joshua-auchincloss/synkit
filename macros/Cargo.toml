@@ -1,0 +1,32 @@
+[package]
+name = "synkit-macros"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+license.workspace = true
+readme.workspace = true
+description.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+publish = true
+
+
+[features]
+default = ["std"]
+std = []
+tokio = []
+futures = []
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }

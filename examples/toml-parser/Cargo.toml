@@ -1,0 +1,20 @@
+[package]
+name = "toml-parser"
+version = "0.1.0"
+
+
+edition.workspace = true
+publish = false
+
+[features]
+default = []
+
+[dependencies]
+logos = { workspace = true }
+synkit = { path = "../../kit", features = ["tokio"] }
+thiserror = {workspace = true}
+tokio = {  features = ["sync", "rt", "macros"], workspace = true}
+
+[dev-dependencies]
+insta = { workspace = true, features = ["yaml"] }
+tokio = {  features = ["sync", "rt", "macros", "rt-multi-thread"], workspace = true}

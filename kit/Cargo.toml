@@ -1,0 +1,37 @@
+[package]
+name = "synkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+license.workspace = true
+readme.workspace = true
+description.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+publish = true
+
+
+[features]
+default = ["std"]
+serde = ["synkit-core/serde"]
+tokio = ["synkit-core/tokio", "synkit-macros/tokio"]
+futures = ["synkit-core/futures", "synkit-macros/futures"]
+std = ["synkit-core/std", "synkit-macros/std"]
+
+[dependencies]
+synkit-core = { workspace = true}
+synkit-macros = { workspace = true }
+
+[dev-dependencies]
+futures-core = {workspace = true}
+insta = { workspace = true }
+logos = { workspace = true }
+test-case = { workspace = true }
+thiserror = { workspace = true }
+tokio = {  features = ["sync", "rt", "macros", "rt-multi-thread"], workspace = true}

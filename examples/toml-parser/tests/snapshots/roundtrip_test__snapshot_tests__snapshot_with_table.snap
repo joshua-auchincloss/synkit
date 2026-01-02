@@ -1,0 +1,7 @@
+---
+source: examples/toml-parser/tests/roundtrip_test.rs
+expression: output
+---
+[package]
+name = "my-package"
+version = "0.1.0"

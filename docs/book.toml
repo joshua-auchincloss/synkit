@@ -1,0 +1,22 @@
+[book]
+title = "synkit"
+authors = ["Joshua Auchincloss"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[rust]
+edition = "2024"
+
+[output.html]
+git-repository-url = "https://github.com/kintsu/synkit"
+edit-url-template = "https://github.com/kintsu/synkit/edit/main/docs/{path}"
+
+[output.html.playground]
+editable = false
+runnable = false
+
+[output.html.code.hidelines]
+toml = "~"

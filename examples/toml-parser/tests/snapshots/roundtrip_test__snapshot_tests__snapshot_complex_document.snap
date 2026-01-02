@@ -1,0 +1,13 @@
+---
+source: examples/toml-parser/tests/roundtrip_test.rs
+expression: output
+---
+title = "Example"
+
+[owner]
+name = "Alice"
+active = true
+
+[database]
+host = "localhost"
+port = 5432

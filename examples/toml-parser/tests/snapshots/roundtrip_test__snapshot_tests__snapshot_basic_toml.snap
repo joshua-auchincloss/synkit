@@ -1,0 +1,6 @@
+---
+source: examples/toml-parser/tests/roundtrip_test.rs
+expression: output
+---
+name = "test"
+version = "1.0.0"

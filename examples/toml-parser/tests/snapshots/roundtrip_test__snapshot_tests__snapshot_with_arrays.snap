@@ -1,0 +1,6 @@
+---
+source: examples/toml-parser/tests/roundtrip_test.rs
+expression: output
+---
+numbers = [1, 2, 3]
+strings = ["a", "b", "c"]

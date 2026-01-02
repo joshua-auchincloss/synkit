@@ -1,0 +1,33 @@
+[package]
+name = "synkit-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+license.workspace = true
+readme.workspace = true
+description.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+publish = true
+
+[features]
+default = ["std"]
+std = []
+serde = ["dep:serde"]
+tokio = ["dep:tokio"]
+futures = ["dep:futures-core"]
+docs = ["dep:simple-mermaid"]
+fuzz = ["dep:arbitrary"]
+
+[dependencies]
+arbitrary = {  features = ["derive"], optional = true, workspace = true}
+futures-core = {  optional = true, workspace = true}
+serde = { workspace = true, optional = true }
+simple-mermaid = {  optional = true, workspace = true}
+tokio = {  features = ["sync"], optional = true, workspace = true}
