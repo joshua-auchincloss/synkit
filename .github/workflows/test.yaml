@@ -57,7 +57,7 @@ jobs:
 
       - name: Restore Fuzz Corpus
         if: ${{ matrix.runner == 'ubuntu-latest' }}
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: fuzz/corpus
           key: fuzz-corpus-${{ runner.os }}-${{ github.sha }}
@@ -71,7 +71,7 @@ jobs:
 
       - name: Save Fuzz Corpus
         if: ${{ matrix.runner == 'ubuntu-latest' && github.ref == 'refs/heads/main' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: fuzz/corpus
           key: fuzz-corpus-${{ runner.os }}-${{ github.sha }}
