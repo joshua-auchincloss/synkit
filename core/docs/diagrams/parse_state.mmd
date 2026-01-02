@@ -1,0 +1,5 @@
+stateDiagram-v2
+    [*] --> NeedMore
+    NeedMore --> NeedMore : more input
+    NeedMore --> Complete : EOF/complete
+    NeedMore --> Error : error

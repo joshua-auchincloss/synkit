@@ -1,0 +1,9 @@
+flowchart TB
+    Source["Source<br/>(network, file, etc)"]
+    AST["AsyncTokenStream<br/>(lexer + buffer)"]
+    Parser["AstStream<br/>(parser + AST buffer)"]
+    Consumer["Consumer"]
+
+    Source -- "chunks" --> AST
+    AST -- "tokens" --> Parser
+    Parser -- "AST nodes" --> Consumer

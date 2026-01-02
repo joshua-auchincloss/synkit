@@ -1,156 +1,93 @@
 # synkit
 
-[![Crates.io Version](https://img.shields.io/crates/v/synkit?style=flat-square)](https://crates.io/crates/synkit)
-[![Crates.io Version](https://img.shields.io/crates/v/synkit-macros?style=flat-square)](https://crates.io/crates/synkit-macros)
-[![Crates.io Version](https://img.shields.io/crates/v/synkit-core?style=flat-square)](https://crates.io/crates/synkit-core)
+[![Crates.io](https://img.shields.io/crates/v/synkit?style=flat-square)](https://crates.io/crates/synkit)
+[![docs.rs](https://img.shields.io/docsrs/synkit?style=flat-square)](https://docs.rs/synkit)
+[![CI](https://img.shields.io/github/actions/workflow/status/joshua-auchincloss/synkit/test.yaml?style=flat-square)](https://github.com/joshua-auchincloss/synkit/actions)
 
-A toolkit for building round-trip parsers with [logos](https://github.com/maciejhirsz/logos). Generates syn-like parsing infrastructure from token definitions.
+Generate [syn](https://docs.rs/syn)-like parsing infrastructure from token definitions. Built on [logos](https://github.com/maciejhirsz/logos).
 
-> [!NOTE]
-> This project is not affiliated with or endorsed by the logos project. It is an independent extension library built on top of logos.
+Define tokens once, get: lexer, typed token structs, whitespace-skipping streams, `Parse`/`Peek`/`ToTokens` traits, span tracking, and round-trip formatting.
 
-> [!NOTE]
-> Originally extracted from [kintsu/kintsu](https://github.com/kintsu/kintsu) (`parser/`) to eliminate boilerplate across projects.
+## When to Use
 
-## Features
-
-- Declarative token and grammar definition via proc macros
-- Auto-generated `Parse`, `Peek`, `ToTokens`, `Diagnostic` traits with concrete types
-- Span tracking and spanned error propagation
-- Whitespace-skipping token streams with fork/rewind
-- Round-trip formatting via `Printer` trait
-- Delimiter extraction helpers (braces, parens, brackets)
-- **Async streaming support** with `IncrementalParse` trait (tokio/futures)
-- Stream validation with `ensure_consumed()` helper
+| Use Case                   | synkit | Alternative          |
+| -------------------------- | ------ | -------------------- |
+| Custom DSL with formatting | Yes    | -                    |
+| Config file parser         | Yes    | serde + format crate |
+| Code transformation        | Yes    | -                    |
+| Rust source parsing        | No     | syn                  |
+| Simple pattern matching    | No     | logos alone          |
 
 ## Installation
 
 ```toml
 [dependencies]
 synkit = "0.1"
+logos = "0.16"
 thiserror = "2"
-
-# Optional: for async streaming
-synkit = { version = "0.1", features = ["tokio"] }
-# or
-synkit = { version = "0.1", features = ["futures"] }
 ```
+
+Features: `tokio`, `futures`, `serde`, `std` (default).
 
 ## Example
 
-```rust,ignore
-use thiserror::Error;
-
-#[derive(Error, Debug, Clone, Default, PartialEq)]
-pub enum LexError {
-    #[default]
-    #[error("unknown")]
-    Unknown,
-}
-
+```rust
 synkit::parser_kit! {
-    error: LexError,
+    error: MyError,
     skip_tokens: [Space],
     tokens: {
         #[token(" ")]
         Space,
-
-        #[token("let")]
-        KwLet,
-
         #[token("=")]
         Eq,
-
-        #[regex(r"[a-z_][a-z0-9_]*", |lex| lex.slice().to_string())]
-        #[fmt("identifier")]
+        #[regex(r"[a-z]+", |lex| lex.slice().to_string())]
         Ident(String),
-
         #[regex(r"[0-9]+", |lex| lex.slice().parse().ok())]
-        #[fmt("number")]
         Number(i64),
     },
     delimiters: {},
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
-    token_derives: [Clone, PartialEq, Debug],
+    span_derives: [Debug, Clone, PartialEq],
+    token_derives: [Debug, Clone, PartialEq],
 }
 
-// AST node
-pub struct LetBinding {
-    pub kw_let: Spanned<tokens::KwLetToken>,
-    pub name: Spanned<tokens::IdentToken>,
-    pub eq: Spanned<tokens::EqToken>,
-    pub value: Spanned<tokens::NumberToken>,
-}
+// Generated: Token enum, EqToken/IdentToken/NumberToken structs,
+// TokenStream, Tok![] macro, Parse/Peek/ToTokens/Diagnostic traits
 
-impl Parse for LetBinding {
-    fn parse(stream: &mut TokenStream) -> Result<Self, LexError> {
-        Ok(Self {
-            kw_let: stream.parse()?,
-            name: stream.parse()?,
-            eq: stream.parse()?,
-            value: stream.parse()?,
-        })
-    }
-}
-
-// Usage
-fn main() -> Result<(), LexError> {
-    let mut stream = TokenStream::lex("let x = 42")?;
-    let binding: Spanned<LetBinding> = stream.parse()?;
-
-    assert_eq!(*binding.name.value, "x");
-    assert_eq!(binding.value.value.0, 42);
-
-    // Validate all tokens consumed
-    stream.ensure_consumed()?;
-    Ok(())
-}
+let mut stream = TokenStream::lex("x = 42")?;
+let name: Spanned<IdentToken> = stream.parse()?;
+let eq: Spanned<EqToken> = stream.parse()?;
+let value: Spanned<NumberToken> = stream.parse()?;
 ```
+
+## Generated Infrastructure
+
+| Module       | Contents                                            |
+| ------------ | --------------------------------------------------- |
+| `tokens`     | `Token` enum, `*Token` structs, `Tok![]` macro      |
+| `stream`     | `TokenStream` with fork/rewind, whitespace skipping |
+| `span`       | `Span`, `Spanned<T>` wrappers                       |
+| `traits`     | `Parse`, `Peek`, `ToTokens`, `Diagnostic`           |
+| `printer`    | Round-trip formatting                               |
+| `delimiters` | `Bracket`, `Brace`, `Paren` extractors              |
 
 ## Async Streaming
 
-synkit supports incremental parsing for streaming scenarios (network data, large files):
+Incremental parsing for network data and large files:
 
-```rust,ignore
-use synkit::async_stream::{IncrementalParse, ParseCheckpoint};
-use synkit::async_stream::tokio_impl::AstStream;
-use tokio::sync::mpsc;
+```rust
+use synkit::async_stream::{IncrementalParse, AstStream};
 
-// Implement IncrementalParse for your AST nodes
 impl IncrementalParse for MyNode {
-    fn parse_incremental(
-        tokens: &[Token],
-        checkpoint: &ParseCheckpoint,
-    ) -> Result<(Option<Self>, ParseCheckpoint), MyError> {
-        // Parse from token buffer, return None if more tokens needed
-    }
-
-    fn can_parse(tokens: &[Token], checkpoint: &ParseCheckpoint) -> bool {
-        checkpoint.cursor < tokens.len()
-    }
+    fn parse_incremental(tokens: &[Token], checkpoint: &ParseCheckpoint)
+        -> Result<(Option<Self>, ParseCheckpoint), MyError>;
 }
 
-// Stream tokens through channels
-let (token_tx, token_rx) = mpsc::channel(32);
-let (ast_tx, mut ast_rx) = mpsc::channel(16);
-
-tokio::spawn(async move {
-    let mut parser = AstStream::<MyNode, Token>::new(token_rx, ast_tx);
-    parser.run().await?;
-});
-
-// Consume AST nodes as they're parsed
-while let Some(node) = ast_rx.recv().await {
-    process(node);
-}
+// Tokens flow through channels, AST nodes emit as parsed
+let mut parser = AstStream::<MyNode, Token>::new(token_rx, ast_tx);
+parser.run().await?;
 ```
 
 ## Documentation
 
-Full documentation: [TODO: docs.rs link]
-
-Book: [TODO: book link]
-
-## License
-
-MIT
+- [Book](https://joshua-auchincloss.github.io/synkit/)
+- [API Reference](https://docs.rs/synkit)
