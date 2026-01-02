@@ -40,3 +40,5 @@
 - [Core Traits](reference/traits.md)
 - [Container Types](reference/containers.md)
 - [Safety & Clamping](reference/safety.md)
+- [Security](reference/security.md)
+- [Testing](reference/testing.md)

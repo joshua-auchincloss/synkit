@@ -1,3 +1,13 @@
+#![deny(
+    unsafe_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::dbg_macro
+)]
+
 //! TOML Parser Example
 //!
 //! This example demonstrates building a TOML parser using synkit.
@@ -114,7 +124,7 @@ synkit::parser_kit! {
         Brace => (LBrace, RBrace),
     },
 
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
+    span_derives: [Debug, Clone, PartialEq, Eq, Hash, Copy],
     token_derives: [Clone, PartialEq, Debug],
 }
 // ANCHOR_END: token_def

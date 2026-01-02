@@ -248,7 +248,7 @@ impl IncrementalParse for IncrementalDocumentItem {
         let start = checkpoint.cursor;
 
         if start >= tokens.len() {
-            return Ok((None, checkpoint.clone()));
+            return Ok((None, *checkpoint));
         }
 
         // Use ChunkBoundary to find the next complete chunk
@@ -260,7 +260,7 @@ impl IncrementalParse for IncrementalDocumentItem {
                 if Self::is_complete_at_eof(remaining) {
                     remaining.len()
                 } else {
-                    return Ok((None, checkpoint.clone()));
+                    return Ok((None, *checkpoint));
                 }
             }
         };

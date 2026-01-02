@@ -307,7 +307,7 @@ impl Parse for Table {
                 // This is tricky - we need to distinguish `[table]` from key-value
                 // Since Key::peek checks for bare keys and strings, and table headers
                 // start with `[`, we need to check `[` first in the document parser
-                let kv: Spanned<KeyValue> = stream.parse()?;
+                let kv = Box::new(stream.parse()?);
                 items.push(TableItem::KeyValue(kv));
                 continue;
             }

@@ -62,7 +62,7 @@ use core::task::{Context, Poll};
 /// Represents the three possible outcomes when parsing from an incremental
 /// token stream: need more input, complete, or error.
 ///
-#[cfg_attr(doc, doc = simple_mermaid::mermaid!("docs/diagrams/parse_state.mmd"))]
+#[cfg_attr(all(doc, feature = "docs"), doc = simple_mermaid::mermaid!("docs/diagrams/parse_state.mmd"))]
 ///
 /// # Example
 ///
@@ -357,10 +357,6 @@ pub trait IncrementalLexer: Sized {
     fn offset(&self) -> usize;
 }
 
-// =============================================================================
-// Chunk Boundary Detection
-// =============================================================================
-
 /// Describes how to detect chunk boundaries for incremental parsing.
 ///
 /// This trait allows parsers to declaratively specify what constitutes a
@@ -438,10 +434,6 @@ pub trait ChunkBoundary {
         Self::find_boundary(tokens, start).is_some()
     }
 }
-
-// =============================================================================
-// Incremental Token Buffer
-// =============================================================================
 
 /// A reusable buffer for incremental token processing.
 ///
@@ -622,10 +614,6 @@ impl<T> AsRef<[T]> for IncrementalBuffer<T> {
         self.remaining()
     }
 }
-
-// =============================================================================
-// Incremental Parse Trait
-// =============================================================================
 
 /// Trait for types that can be incrementally parsed.
 ///

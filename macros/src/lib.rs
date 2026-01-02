@@ -1,3 +1,13 @@
+#![deny(
+    unsafe_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::dbg_macro
+)]
+
 //! Procedural macros for the synkit parsing toolkit.
 //!
 //! This crate provides two main macros:
@@ -20,7 +30,6 @@
 //!     },
 //! }
 //! ```
-
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
 

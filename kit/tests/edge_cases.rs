@@ -2,7 +2,7 @@
 use synkit::{SpanLike, SpannedLike};
 
 /// Minimal span implementation for testing SpanLike trait behavior.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 struct TestSpan {
     start: usize,
     end: usize,
@@ -33,7 +33,7 @@ struct TestSpanned<T> {
     value: T,
 }
 
-impl<T: Clone> SpannedLike<T> for TestSpanned<T> {
+impl<T: Clone + Copy> SpannedLike<T> for TestSpanned<T> {
     type Span = TestSpan;
 
     fn span(&self) -> &Self::Span {
@@ -143,9 +143,7 @@ fn test_span_join_inverted_inputs() {
     assert_eq!(joined.end(), 150);
 }
 
-// ============================================
 // SpannedLike map tests
-// ============================================
 
 #[test]
 fn test_spanned_map_preserves_span() {
@@ -166,9 +164,7 @@ fn test_spanned_map_empty_span() {
     assert_eq!(mapped.value(), 4);
 }
 
-// ============================================
-// UTF-8 boundary awareness tests (4.2)
-// ============================================
+// UTF-8 boundary awareness tests
 
 #[test]
 fn test_utf8_string_char_boundaries() {
@@ -216,9 +212,7 @@ fn test_span_respects_multibyte_chars() {
     assert_eq!(&text[1..4], "日");
 }
 
-// ============================================
 // Integer overflow safety tests
-// ============================================
 
 #[test]
 fn test_span_arithmetic_no_overflow() {

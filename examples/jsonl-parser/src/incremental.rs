@@ -218,7 +218,7 @@ impl IncrementalParse for JsonLine {
         let start = checkpoint.cursor;
 
         if start >= tokens.len() {
-            return Ok((None, checkpoint.clone()));
+            return Ok((None, *checkpoint));
         }
 
         // Use ChunkBoundary to find the next complete chunk
@@ -230,7 +230,7 @@ impl IncrementalParse for JsonLine {
                 if Self::is_complete_at_eof(remaining) {
                     remaining.len()
                 } else {
-                    return Ok((None, checkpoint.clone()));
+                    return Ok((None, *checkpoint));
                 }
             }
         };
@@ -336,7 +336,7 @@ impl JsonLine {
             Arc::new(tokens_vec),
         );
         let value = JsonValue::parse(&mut stream)?;
-        let span = value.span.clone();
+        let span = value.span;
         Ok(JsonLine { value, span })
     }
 
@@ -356,7 +356,7 @@ impl JsonLine {
         let mut stream =
             crate::stream::TokenStream::lex(&source).map_err(|_| JsonError::Unknown)?;
         let value = JsonValue::parse(&mut stream)?;
-        let span = value.span.clone();
+        let span = value.span;
         Ok(JsonLine { value, span })
     }
 }

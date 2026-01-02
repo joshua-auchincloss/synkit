@@ -27,7 +27,7 @@ synkit::parser_kit! {
 
     delimiters: {},
 
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
+    span_derives: [Debug, Clone, PartialEq, Eq, Hash, Copy],
     token_derives: [Clone, PartialEq, Debug],
 }
 

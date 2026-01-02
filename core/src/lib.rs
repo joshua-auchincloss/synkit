@@ -1,3 +1,13 @@
+#![deny(
+    unsafe_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::dbg_macro
+)]
+
 pub mod config;
 mod delimited;
 mod error;

@@ -164,7 +164,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
     } = input;
 
     let span_derives_tokens = if span_derives.is_empty() {
-        quote! { Debug, Clone, PartialEq, Eq, Hash }
+        quote! { Debug, Clone, PartialEq, Eq, Hash, Copy }
     } else {
         quote! { #(#span_derives),* }
     };
@@ -177,13 +177,22 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
 
     let span_module = quote! {
         pub mod span {
+            /// Raw byte span with start and end offsets.
+            ///
+            /// Layout: 16 bytes on 64-bit (2 × usize), 8-byte aligned.
             #[derive(#span_derives_tokens)]
             #custom_derives_attr
+            #[repr(C)]
             pub struct RawSpan {
                 pub start: usize,
                 pub end: usize,
             }
 
+            /// Source location span, either known or synthetic (call-site).
+            ///
+            /// Layout: 24 bytes on 64-bit (8-byte discriminant region + 16 bytes data).
+            /// Uses `usize::MAX` sentinel in start position for CallSite to enable
+            /// future niche optimization if needed.
             #[derive(#span_derives_tokens)]
             #custom_derives_attr
             pub enum Span {
@@ -192,14 +201,17 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
             }
 
             impl Span {
+                #[inline]
                 pub fn new(start: usize, end: usize) -> Self {
                     Self::Known(RawSpan { start, end })
                 }
 
+                #[inline]
                 pub fn call_site() -> Self {
                     Self::CallSite
                 }
 
+                #[inline]
                 pub fn len(&self) -> usize {
                     match self {
                         Self::Known(s) => s.end.saturating_sub(s.start),
@@ -207,54 +219,67 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     }
                 }
 
+                #[inline]
                 pub fn is_empty(&self) -> bool {
                     self.len() == 0
                 }
 
+                #[inline]
                 pub fn raw(&self) -> RawSpan {
                     match self {
-                        Self::Known(s) => s.clone(),
+                        Self::Known(s) => *s,
                         Self::CallSite => RawSpan { start: 0, end: 0 },
                     }
                 }
 
+                #[inline]
                 pub fn join(&self, other: &Self) -> Self {
                     match (self, other) {
                         (Self::Known(a), Self::Known(b)) => {
                             Self::new(a.start.min(b.start), a.end.max(b.end))
                         }
-                        (Self::Known(s), _) | (_, Self::Known(s)) => Self::Known(s.clone()),
+                        (Self::Known(s), _) | (_, Self::Known(s)) => Self::Known(*s),
                         _ => Self::CallSite,
                     }
                 }
             }
 
             impl synkit::SpanLike for Span {
+                #[inline]
                 fn start(&self) -> usize {
                     self.raw().start
                 }
 
+                #[inline]
                 fn end(&self) -> usize {
                     self.raw().end
                 }
 
+                #[inline]
                 fn new(start: usize, end: usize) -> Self {
                     Self::new(start, end)
                 }
 
+                #[inline]
                 fn call_site() -> Self {
                     Self::CallSite
                 }
             }
 
+            /// A value with associated source span.
+            ///
+            /// Field order optimized: span first (8-byte aligned) ensures T
+            /// starts at optimal offset regardless of T's alignment.
             #[derive(Debug, Clone)]
             #custom_derives_attr
+            #[repr(C)]
             pub struct Spanned<T> {
                 pub span: Span,
                 pub value: T,
             }
 
             impl<T> Spanned<T> {
+                #[inline]
                 pub fn new(start: usize, end: usize, value: T) -> Self {
                     Self {
                         span: Span::new(start, end),
@@ -262,6 +287,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     }
                 }
 
+                #[inline]
                 pub fn call_site(value: T) -> Self {
                     Self {
                         span: Span::CallSite,
@@ -269,6 +295,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     }
                 }
 
+                #[inline]
                 pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Spanned<U> {
                     Spanned {
                         span: self.span,
@@ -276,6 +303,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     }
                 }
 
+                #[inline]
                 pub fn as_ref(&self) -> Spanned<&T> {
                     Spanned {
                         span: self.span.clone(),
@@ -310,6 +338,26 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     Self::new(start, end, value)
                 }
             }
+
+            // Compile-time layout assertions for 64-bit platforms
+            #[cfg(target_pointer_width = "64")]
+            const _: () = {
+                use core::mem::{size_of, align_of};
+
+                // RawSpan: 16 bytes, 8-byte aligned (2 × usize)
+                const _RAW_SPAN_SIZE: () = assert!(size_of::<RawSpan>() == 16);
+                const _RAW_SPAN_ALIGN: () = assert!(align_of::<RawSpan>() == 8);
+
+                // Span: 24 bytes (8 discriminant + 16 data), 8-byte aligned
+                const _SPAN_SIZE: () = assert!(size_of::<Span>() == 24);
+                const _SPAN_ALIGN: () = assert!(align_of::<Span>() == 8);
+
+                // Spanned<u8>: 32 bytes (24 span + 1 value + 7 padding)
+                const _SPANNED_U8_SIZE: () = assert!(size_of::<Spanned<u8>>() == 32);
+
+                // Spanned<usize>: 32 bytes (24 span + 8 value)
+                const _SPANNED_USIZE_SIZE: () = assert!(size_of::<Spanned<usize>>() == 32);
+            };
         }
     };
 
@@ -346,13 +394,13 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
     let stream_module = quote! {
         pub mod stream {
             use std::sync::Arc;
-            use std::path::{Path, PathBuf};
+            use std::path::Path;
             use super::span::{Span, Spanned};
             use super::tokens::{Token, SpannedToken};
 
             pub struct TokenStream {
                 source: Arc<str>,
-                source_path: Option<PathBuf>,
+                source_path: Option<Arc<Path>>,
                 tokens: Arc<Vec<SpannedToken>>,
                 cursor: usize,
                 range_start: usize,
@@ -362,12 +410,12 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
 
             impl TokenStream {
                 pub fn lex(source: &str) -> Result<Self, super::#error_type> {
-                    Self::lex_with_path(source, None::<PathBuf>)
+                    Self::lex_with_path(source, None::<&Path>)
                 }
 
                 pub fn lex_with_path(
                     source: &str,
-                    path: Option<impl Into<PathBuf>>,
+                    path: Option<impl AsRef<Path>>,
                 ) -> Result<Self, super::#error_type> {
                     use logos::Logos;
                     let source: Arc<str> = Arc::from(source);
@@ -383,7 +431,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     let len = tokens.len();
                     Ok(Self {
                         source,
-                        source_path: path.map(Into::into),
+                        source_path: path.map(|p| Arc::from(p.as_ref())),
                         tokens: Arc::new(tokens),
                         cursor: 0,
                         range_start: 0,
@@ -553,8 +601,8 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
 
                         Ok((
                             TokenStream {
-                                source: self.source.clone(),
-                                source_path: self.source_path.clone(),
+                                source: Arc::clone(&self.source),
+                                source_path: self.source_path.as_ref().map(Arc::clone),
                                 tokens: Arc::clone(&self.tokens),
                                 cursor: inner_start,
                                 range_start: inner_start,
@@ -629,7 +677,7 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                 fn fork(&self) -> Self {
                     Self {
                         source: Arc::clone(&self.source),
-                        source_path: self.source_path.clone(),
+                        source_path: self.source_path.as_ref().map(Arc::clone),
                         tokens: Arc::clone(&self.tokens),
                         cursor: self.cursor,
                         range_start: self.range_start,
@@ -650,6 +698,31 @@ pub fn expand(input: ParserKitInput) -> syn::Result<TokenStream> {
                     self.tokens.get(pos).map(|t| t.span.clone())
                 }
             }
+
+            // Compile-time assertions for TokenStream
+            const _: () = {
+                const fn assert_send<T: Send>() {}
+                const fn assert_sync<T: Sync>() {}
+                assert_send::<TokenStream>();
+                assert_sync::<TokenStream>();
+            };
+
+            #[cfg(target_pointer_width = "64")]
+            const _: () = {
+                use core::mem::{size_of, align_of};
+
+                // TokenStream layout on 64-bit:
+                // - source: Arc<str> = 16 bytes (DST: ptr + len)
+                // - source_path: Option<Arc<Path>> = 16 bytes (DST: ptr + len)
+                // - tokens: Arc<Vec<SpannedToken>> = 8 bytes (thin ptr)
+                // - cursor: usize = 8 bytes
+                // - range_start: usize = 8 bytes
+                // - range_end: usize = 8 bytes
+                // - last_cursor: usize = 8 bytes
+                // Total: 72 bytes, 8-byte aligned
+                const _STREAM_SIZE: () = assert!(size_of::<TokenStream>() == 72);
+                const _STREAM_ALIGN: () = assert!(align_of::<TokenStream>() == 8);
+            };
 
             #[derive(Default, Debug, Clone)]
             pub struct MutTokenStream {

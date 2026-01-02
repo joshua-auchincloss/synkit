@@ -102,7 +102,7 @@ synkit::parser_kit! {
         Bracket => (LBracket, RBracket),
     },
 
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
+    span_derives: [Debug, Clone, PartialEq, Eq, Hash, Copy],
     token_derives: [Clone, PartialEq, Debug],
 }
 
@@ -501,10 +501,6 @@ mod tests {
             assert_eq!(&**field.value.name.value, *expected);
         }
     }
-
-    // ========================================
-    // Visitor pattern tests
-    // ========================================
 
     #[test]
     fn test_visitor_collect_idents() {

@@ -488,10 +488,6 @@ mod futures_tests {
     }
 }
 
-// ============================================================================
-// Integration tests (requires both features)
-// ============================================================================
-
 #[cfg(all(feature = "tokio", feature = "futures"))]
 mod integration_tests {
     use super::*;

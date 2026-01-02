@@ -1,3 +1,14 @@
+#![allow(clippy::len_without_is_empty)]
+#![deny(
+    unsafe_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::dbg_macro
+)]
+
 //! JSON Lines Parser Example
 //!
 //! This example demonstrates building a JSON Lines (JSONL) parser using synkit
@@ -119,7 +130,7 @@ synkit::parser_kit! {
         Bracket => (LBracket, RBracket),
     },
 
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
+    span_derives: [Debug, Clone, PartialEq, Eq, Hash, Copy],
     token_derives: [Clone, PartialEq, Debug],
 }
 // ANCHOR_END: token_def

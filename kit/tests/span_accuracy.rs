@@ -78,7 +78,7 @@ synkit::parser_kit! {
         Paren => (LParen, RParen),
     },
 
-    span_derives: [Debug, Clone, PartialEq, Eq, Hash],
+    span_derives: [Debug, Clone, PartialEq, Eq, Hash, Copy],
     token_derives: [Clone, PartialEq, Debug],
 }
 

@@ -54,9 +54,9 @@ pub trait SpanLike: Clone {
 ///
 /// Wraps any value `T` with span information for error reporting and
 /// source mapping. Implementations must be `Clone` to support backtracking.
-pub trait SpannedLike<T>: Clone {
+pub trait SpannedLike<T> {
     /// The span type used to track source locations.
-    type Span: SpanLike;
+    type Span: SpanLike + Copy;
 
     /// Returns a reference to the span.
     fn span(&self) -> &Self::Span;
@@ -76,7 +76,7 @@ pub trait SpannedLike<T>: Clone {
     where
         Self: Sized,
     {
-        let span = self.span().clone();
+        let span = *self.span();
         MappedSpanned {
             span,
             value: f(self.value()),
@@ -90,7 +90,7 @@ struct MappedSpanned<T, S> {
     value: T,
 }
 
-impl<T: Clone, S: SpanLike> SpannedLike<T> for MappedSpanned<T, S> {
+impl<T: Clone, S: SpanLike + Copy> SpannedLike<T> for MappedSpanned<T, S> {
     type Span = S;
 
     #[inline]

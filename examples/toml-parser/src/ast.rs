@@ -103,7 +103,7 @@ pub struct Table {
 #[derive(Debug, Clone)]
 pub enum TableItem {
     Trivia(Trivia),
-    KeyValue(Spanned<KeyValue>),
+    KeyValue(Box<Spanned<KeyValue>>),
 }
 // ANCHOR_END: table
 
