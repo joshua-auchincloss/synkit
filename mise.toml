@@ -6,7 +6,7 @@ run = [
 
 [tasks.test]
 run = [
-    "cargo insta test --all-features --workspace",
+    "cargo insta test --features futures,tokio,std,fuzz,serde --workspace",
     { task = "junit" },
 ]
 
