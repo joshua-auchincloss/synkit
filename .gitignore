@@ -40,3 +40,4 @@ docs/book
 
 /fuzz/corpus/
 /fuzz/artifacts/
+.schema

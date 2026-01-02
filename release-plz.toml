@@ -1,0 +1,60 @@
+# release-plz configuration
+# https://release-plz.dev/docs/config
+
+[workspace]
+# Enable git releases for the workspace
+git_release_enable = true
+git_release_draft = false
+git_tag_enable = true
+
+# Changelog configuration
+changelog_update = true
+
+# PR configuration
+pr_draft = false
+pr_labels = ["release"]
+
+# Semver check before release
+semver_check = true
+
+# Publish timeout (5 minutes)
+publish_timeout = "5m"
+
+# synkit-core: Core types and traits
+[[package]]
+name = "synkit-core"
+publish = true
+# Publish with specific features for docs.rs (not all - skip fuzz)
+publish_all_features = false
+publish_features = ["std", "serde", "tokio", "futures", "docs"]
+git_release_enable = false  # Only create release for main synkit crate
+changelog_path = "core/CHANGELOG.md"
+
+# synkit-macros: Procedural macros
+[[package]]
+name = "synkit-macros"
+publish = true
+# Macros don't have optional features that affect docs
+publish_all_features = true
+git_release_enable = false  # Only create release for main synkit crate
+changelog_path = "macros/CHANGELOG.md"
+
+# synkit: Main crate (re-exports core + macros)
+[[package]]
+name = "synkit"
+publish = true
+# Publish with all features for docs.rs
+publish_all_features = true
+git_release_enable = true  # Create GitHub release for this crate
+changelog_path = "kit/CHANGELOG.md"
+
+# Example crates - don't publish
+[[package]]
+name = "toml-parser"
+release = false
+publish = false
+
+[[package]]
+name = "jsonl-parser"
+release = false
+publish = false
