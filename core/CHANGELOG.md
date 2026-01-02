@@ -7,23 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.3](https://github.com/joshua-auchincloss/synkit/compare/synkit-v0.0.2...synkit-v0.0.3) - 2026-01-02
+## [0.0.3](https://github.com/joshua-auchincloss/synkit/compare/synkit-core-v0.0.2...synkit-core-v0.0.3) - 2026-01-02
 
 ### Added
 
 - ci
-
-## [0.0.0](https://github.com/joshua-auchincloss/synkit/releases/tag/synkit-v0.0.0) - 2026-01-02
-
-### Added
-
-- synkit
-
-### Fixed
-
-- path
-- path
-- path
-- path
-- path
-- docs
