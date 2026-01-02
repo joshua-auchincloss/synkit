@@ -51,4 +51,5 @@ run = [
 ]
 
 [tools]
+cargo-binstall = "latest"
 mdbook = "latest"
