@@ -3,13 +3,13 @@ members = ["core", "examples/*", "kit", "macros"]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.0"
+version = "0.0.1"
 edition = "2024"
 license = "MIT"
 rust-version = "1.85"
 
-repository = "https://github.com/joshuaauchincloss/synkit"
-homepage = "https://github.com/joshuaauchincloss/synkit"
+repository = "https://github.com/joshua-auchincloss/synkit"
+homepage = "https://joshua-auchincloss.github.io/synkit"
 documentation = "https://docs.rs/synkit"
 
 readme = "README.md"
@@ -20,8 +20,8 @@ categories = ["parsing", "asynchronous", "development-tools::procedural-macro-he
 
 
 [workspace.dependencies]
-synkit-core = { path = "core", version = "0.0.0" }
-synkit-macros = { path = "macros", version = "0.0.0" }
+synkit-core = { path = "core", version = "0.0.1" }
+synkit-macros = { path = "macros", version = "0.0.1" }
 
 arbitrary = "1"
 divan = { version = "4", package = "codspeed-divan-compat" }
