@@ -3,7 +3,7 @@ members = ["core", "examples/*", "kit", "macros"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT"
 rust-version = "1.85"
@@ -20,8 +20,8 @@ categories = ["parsing", "asynchronous", "development-tools::procedural-macro-he
 
 
 [workspace.dependencies]
-synkit-core = { path = "core", version = "0.1.0" }
-synkit-macros = { path = "macros", version = "0.1.0" }
+synkit-core = { path = "core", version = "0.1.1" }
+synkit-macros = { path = "macros", version = "0.1.1" }
 
 arbitrary = "1"
 divan = { version = "4", package = "codspeed-divan-compat" }
