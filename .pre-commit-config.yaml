@@ -16,6 +16,13 @@ repos:
         types: [rust]
         pass_filenames: false
 
+      - id: cargo-clippy
+        name: cargo clippy
+        language: system
+        types: [rust]
+        pass_filenames: false
+        entry: cargo clippy --all-features -- -D warnings
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -34,13 +41,3 @@ repos:
     rev: typos-dict-v0.13.13
     hooks:
       - id: typos
-
-# - repo: local
-#   hooks:
-
-#     - id: cargo-clippy
-#       name: cargo clippy
-#       language: system
-#       types: [rust]
-#       pass_filenames: false
-#       entry: cargo clippy --features generate,chrono,time,emit -- -D warnings
