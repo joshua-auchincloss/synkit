@@ -43,7 +43,7 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install cargo-codspeed
-        uses: cargo-bins/cargo-binstall@v1.16.6
+        uses: cargo-bins/cargo-binstall@v1.17.4
 
       - run: cargo binstall -y --force cargo-codspeed@4
 
